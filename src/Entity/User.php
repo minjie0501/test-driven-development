@@ -25,7 +25,7 @@ class User
     private $credit;
 
     #[ORM\Column(type: 'boolean')]
-    private $premiumMember;
+    private $premiumMember = false;
 
     #[ORM\OneToMany(mappedBy: 'userId', targetEntity: Booking::class)]
     private $bookings;

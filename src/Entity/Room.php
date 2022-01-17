@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use \Datetime;
+use Doctrine\Persistence\ManagerRegistry;
+
 
 
 
@@ -24,9 +26,9 @@ class Room
     private $name;
 
     #[ORM\Column(type: 'boolean')]
-    private $onlyForPremiumMembers;
+    private $onlyForPremiumMembers = false;
 
-    #[ORM\OneToMany(mappedBy: 'roomId', targetEntity: Booking::class)]
+    #[ORM\OneToMany(mappedBy: 'roomId', targetEntity: Booking::class, fetch:"EAGER")]
     private $bookings;
 
     public function __construct(bool $premium)
@@ -70,7 +72,6 @@ class Room
     }
 
 
-
     function canBookTimeFrame(DateTime $start, DateTime $end): bool
     {
         $interval = $start->diff($end);
@@ -94,6 +95,17 @@ class Room
     function canAfford(User $user, int $hour):bool{
         return($user->getCredit() > $hour*2);
     }
+
+    // function isAvailable(DateTime $start, DateTime $end): bool{
+    //     $bookings = $this->getBookings()->unwrap();
+    //     $test = [];
+
+    //     foreach ($bookings as &$value) {
+    //         $test[] = $value->getStartDate();
+    //     }
+    //     // $this->getBookings()->unwrap();
+    //     return false;
+    // }
 
     /**
      * @return Collection|Booking[]
@@ -123,5 +135,24 @@ class Room
         }
 
         return $this;
+    }
+
+    protected function reservedDates(ManagerRegistry $doctrine):array
+    {
+        $entityManager = $doctrine->getManager();
+        $room = $entityManager->getRepository(Room::class)->find($this->getId);
+
+        $bookings = $room->getBookings()->unwrap();
+        $reservedDates = [];
+
+        foreach ($bookings as &$value) {
+            $reservedDates[] = ['start' => $value->getStartDate(), 'end' => $value->getEndDate()];
+        }
+        return $reservedDates;
+    }
+
+    public function checkDateAvailability(DateTime $date):bool{
+        // TODO: check somehow wether $date is in reservedDates or not
+        return false;
     }
 }

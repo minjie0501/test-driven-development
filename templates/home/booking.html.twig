@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello HomeController!
+{% endblock %}
+
+{% block body %}
+	<form action="/home" method="POST">
+		<label for="date">Date:</label>
+		<input type="date" id="date" name="date" value="2022-01-17" min="2022-01-01" max="2022-12-31">
+
+		<label for="start-time">Start time:</label>
+		<input type="time" id="start-time" name="start-time" min="08:00" max="16:00" required>
+
+        <label for="end-time">End time:</label>
+		<input type="time" id="end-time" name="end-time" min="08:00" max="20:00" required>
+
+		<input type="submit" value="Reserver roomci">
+	</form>
+
+{% endblock %}

@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
@@ -8,7 +9,7 @@ use App\Entity\User;
 
 class CheckRoomAvailabilityTest extends TestCase
 {
-    function dataProviderForPremiumRoom() : array
+    function dataProviderForPremiumRoom(): array
     {
         return [
             [true, true, true],
@@ -22,7 +23,8 @@ class CheckRoomAvailabilityTest extends TestCase
      * function has to start with Test
      * @dataProvider dataProviderForPremiumRoom
      */
-    public function testPremiumRoom(bool $roomVar, bool $userVar, bool $expectedOutput): void{
+    public function testPremiumRoom(bool $roomVar, bool $userVar, bool $expectedOutput): void
+    {
 
         $room = new Room($roomVar);
         $user = new User($userVar);
@@ -31,7 +33,7 @@ class CheckRoomAvailabilityTest extends TestCase
     }
 
 
-    function dataProviderForBookedTime() : array
+    function dataProviderForBookedTime(): array
     {
         return [
             [new DateTime("2018-01-10 02:00:45"), new DateTime("2018-01-10 04:00:45"), true],
@@ -45,15 +47,49 @@ class CheckRoomAvailabilityTest extends TestCase
      * function has to start with Test
      * @dataProvider dataProviderForBookedTime
      */
-    public function testBookedTime(DateTime $start, DateTime $end, bool $expectedOutput): void{
+    public function testBookedTime(DateTime $start, DateTime $end, bool $expectedOutput): void
+    {
 
         $room = new Room(false);
         $d1 = $start;
         $d2 = $end;
-        
+
         $this->assertEquals($expectedOutput, $room->canBookTimeFrame($d1, $d2));
     }
 
+    function dataProviderForCanAfford(): array
+    {
+        return [
+            [new User(false), 2, 2, false],
+            [new User(true), 100, 4, true],
+            [new User(false), 12, 3, true],
+            [new User(true), 7, 4, false]
+        ];
+    }
+
+    /**
+     * function has to start with Test
+     * @dataProvider dataProviderForCanAfford
+     */
+    public function testCanAfford(User $user, int $credit, int $hoursBooked, bool $expectedOutput): void
+    {
+        $room = new Room(false);
+        $testUser = $user;
+        $testUser->setCredit($credit);
+
+        $this->assertEquals($expectedOutput, $room->canAfford($testUser, $hoursBooked));
+    }
+
+    // NOTE: php ./vendor/bin/phpunit
 
 
+    // public function isAvailable(array $reservedDates, bool $expectedOutput): void
+    // {
+
+
+    //     $this->assertEquals($expectedOutput, $room->isAvailable());
+    // }
+
+
+    
 }
