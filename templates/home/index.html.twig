@@ -5,12 +5,12 @@
 {% block body %}
 <ul>
     {% for room in rooms %}
-        <li>{{ room.name|e }} <a href="/booking">Reserve room</a></li>
+        <li>{{ room.name|e }} <a href="/booking?id={{room.id}}">Reserve room</a></li>
     {% endfor %}
 </ul>
 {{dump(request)}}
-{{dump(bookings)}}
-{{dump(test)}}
+{# {{dump(bookings)}} #}
+{# {{dump(test)}} #}
 
 
 {% endblock %}

@@ -15,8 +15,6 @@ use Doctrine\Persistence\ManagerRegistry;
 #[ORM\Entity(repositoryClass: RoomRepository::class)]
 class Room
 {
-
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -28,7 +26,7 @@ class Room
     #[ORM\Column(type: 'boolean')]
     private $onlyForPremiumMembers = false;
 
-    #[ORM\OneToMany(mappedBy: 'roomId', targetEntity: Booking::class, fetch:"EAGER")]
+    #[ORM\OneToMany(mappedBy: 'roomId', targetEntity: Booking::class, fetch: "EAGER")]
     private $bookings;
 
     public function __construct(bool $premium)
@@ -66,6 +64,7 @@ class Room
         return $this;
     }
 
+
     function canBook(User $user): bool
     {
         return ($this->getOnlyForPremiumMembers() && $user->getPremiumMember()) || !$this->getOnlyForPremiumMembers();
@@ -75,37 +74,60 @@ class Room
     function canBookTimeFrame(DateTime $start, DateTime $end): bool
     {
         $interval = $start->diff($end);
-        $diffInMinutes = $interval->i; 
-        $diffInHours   = $interval->h; 
-        $diffInDays    = $interval->d; 
-        $diffInMonths  = $interval->m; 
+        $diffInMinutes = $interval->i;
+        $diffInHours   = $interval->h;
+        $diffInDays    = $interval->d;
+        $diffInMonths  = $interval->m;
         $diffInYears   = $interval->y;
 
         $minutes = 0;
         $minutes += $diffInHours * 60;
         $minutes +=  $diffInMinutes;
 
-        if($diffInDays == 0 && $diffInMonths == 0 && $diffInYears == 0 && 0 < $minutes && $minutes < 241){
+        if ($diffInDays == 0 && $diffInMonths == 0 && $diffInYears == 0 && 0 < $minutes && $minutes < 241) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
-    
-    function canAfford(User $user, int $hour):bool{
-        return($user->getCredit() > $hour*2);
+
+    function canAfford(User $user, int $hour): bool
+    {
+        return ($user->getCredit() > $hour * 2);
     }
 
-    // function isAvailable(DateTime $start, DateTime $end): bool{
-    //     $bookings = $this->getBookings()->unwrap();
-    //     $test = [];
+    public function reservedDates(ManagerRegistry $doctrine): array
+    {
+        $entityManager = $doctrine->getManager();
+        $room = $entityManager->getRepository(Room::class)->find($this->getId());
 
-    //     foreach ($bookings as &$value) {
-    //         $test[] = $value->getStartDate();
-    //     }
-    //     // $this->getBookings()->unwrap();
-    //     return false;
-    // }
+        $bookings = $room->getBookings()->unwrap();
+        $reservedDates = [];
+
+        foreach ($bookings as &$value) {
+            $reservedDates[] = ['start' => $value->getStartDate(), 'end' => $value->getEndDate()];
+        }
+        return $reservedDates;
+    }
+
+    // TODO: remove reservedDates from params?
+    public function isAvailable(DateTime $startDate, DateTime $endDate, array $reservedDates): bool
+    {
+        $check = true;
+        foreach ($reservedDates as &$value) {
+            if ($startDate->getTimestamp() > $value['start']->getTimestamp() && $startDate->getTimestamp() < $value['end']->getTimestamp()) {
+                $check = false; // new start > old start AND new start < old end 
+            } elseif ($endDate->getTimestamp() > $value['start']->getTimestamp() && $endDate->getTimestamp() < $value['end']->getTimestamp()) {
+                $check = false; // new end > old start AND new end < old end
+            } elseif ($startDate->getTimestamp() <= $value['start']->getTimestamp() && $endDate->getTimestamp() > $value['end']->getTimestamp()) {
+                $check = false; // new start < old start AND new end > old end
+            } elseif ($startDate->getTimestamp() > $value['start']->getTimestamp() && $endDate->getTimestamp() == $value['end']->getTimestamp()) {
+                $check = false; // new start > old start AND new end == old end
+            }
+        }
+
+        return $check;
+    }
 
     /**
      * @return Collection|Booking[]
@@ -137,22 +159,5 @@ class Room
         return $this;
     }
 
-    protected function reservedDates(ManagerRegistry $doctrine):array
-    {
-        $entityManager = $doctrine->getManager();
-        $room = $entityManager->getRepository(Room::class)->find($this->getId);
 
-        $bookings = $room->getBookings()->unwrap();
-        $reservedDates = [];
-
-        foreach ($bookings as &$value) {
-            $reservedDates[] = ['start' => $value->getStartDate(), 'end' => $value->getEndDate()];
-        }
-        return $reservedDates;
-    }
-
-    public function checkDateAvailability(DateTime $date):bool{
-        // TODO: check somehow wether $date is in reservedDates or not
-        return false;
-    }
 }

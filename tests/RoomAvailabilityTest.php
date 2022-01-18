@@ -83,13 +83,40 @@ class CheckRoomAvailabilityTest extends TestCase
     // NOTE: php ./vendor/bin/phpunit
 
 
-    // public function isAvailable(array $reservedDates, bool $expectedOutput): void
-    // {
 
+    function dataProviderForIsAvailable(): array
+    {
+        return [
+            [new DateTime("2018-01-10 12:00:45"), new DateTime("2018-01-10 14:00:45"), [
+                ['start' => new DateTime("2018-01-10 02:00:45"), 'end' => new DateTime("2018-01-10 06:00:45")],
+                ['start' => new DateTime("2018-01-10 12:00:45"), 'end' => new DateTime("2018-01-10 13:00:45")],
+                ['start' => new DateTime("2018-01-10 14:00:45"), 'end' => new DateTime("2018-01-10 16:00:45")],
+            ], false],
+            [new DateTime("2018-01-10 12:00:45"), new DateTime("2018-01-10 14:00:45"), [
+                ['start' => new DateTime("2018-01-10 08:00:45"), 'end' => new DateTime("2018-01-10 12:00:45")],
+                ['start' => new DateTime("2018-01-10 08:00:45"), 'end' => new DateTime("2018-01-10 10:00:45")],
+                ['start' => new DateTime("2018-01-10 14:00:45"), 'end' => new DateTime("2018-01-10 19:00:45")],
+            ], true],
+            [new DateTime("2018-01-10 15:00:45"), new DateTime("2018-01-10 19:00:45"), [
+                ['start' => new DateTime("2018-01-10 12:00:45"), 'end' => new DateTime("2018-01-10 15:00:45")],
+                ['start' => new DateTime("2018-01-10 11:00:45"), 'end' => new DateTime("2018-01-10 12:00:45")],
+                ['start' => new DateTime("2018-01-10 11:00:45"), 'end' => new DateTime("2018-01-10 14:00:45")],
+            ], true],
+            [new DateTime("2018-01-10 10:00:45"), new DateTime("2018-01-10 14:00:45"), [
+                ['start' => new DateTime("2018-01-10 02:00:45"), 'end' => new DateTime("2018-01-10 02:00:45")],
+                ['start' => new DateTime("2018-01-10 02:00:45"), 'end' => new DateTime("2018-01-10 02:00:45")],
+                ['start' => new DateTime("2018-01-10 12:00:45"), 'end' => new DateTime("2018-01-10 13:00:45")],
+            ], false],
+        ];
+    }
 
-    //     $this->assertEquals($expectedOutput, $room->isAvailable());
-    // }
-
-
-    
+    /**
+     * function has to start with Test
+     * @dataProvider dataProviderForIsAvailable
+     */
+    public function testIsAvailable(DateTime $start, DateTime $end, array $reservedDates, bool $expectedOutput): void
+    {
+        $room = new Room(false);
+        $this->assertEquals($expectedOutput, $room->isAvailable($start, $end, $reservedDates));
+    }
 }
