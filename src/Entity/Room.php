@@ -10,8 +10,6 @@ use \Datetime;
 use Doctrine\Persistence\ManagerRegistry;
 
 
-
-
 #[ORM\Entity(repositoryClass: RoomRepository::class)]
 class Room
 {
@@ -113,6 +111,8 @@ class Room
     // TODO: remove reservedDates from params?
     public function isAvailable(DateTime $startDate, DateTime $endDate, array $reservedDates): bool
     {
+        // TODO: What if somebody enters an end date to start before the start date
+        //       What is the dates of 2 bookings match exactly.
         $check = true;
         foreach ($reservedDates as &$value) {
             if ($startDate->getTimestamp() > $value['start']->getTimestamp() && $startDate->getTimestamp() < $value['end']->getTimestamp()) {
