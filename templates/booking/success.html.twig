@@ -1,7 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Success!{% endblock %}
+{% block title %}Success!
+{% endblock %}
 
 {% block body %}
-    <h1>Successfully added new booking</h1>
+	<h1>Successfully added new booking</h1>
+    <p>Date: {{date}} {{startTime}}-{{endTime}}</p>
+    <p>Room: {{roomName}}</p>
+    
+    
+    
+	<a href="/">Back to home page</a>
 {% endblock %}

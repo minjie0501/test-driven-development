@@ -111,8 +111,6 @@ class Room
     // TODO: remove reservedDates from params?
     public function isAvailable(DateTime $startDate, DateTime $endDate, array $reservedDates): bool
     {
-        // TODO: What if somebody enters an end date to start before the start date
-        //       What is the dates of 2 bookings match exactly.
         $check = true;
         foreach ($reservedDates as &$value) {
             if ($startDate->getTimestamp() > $value['start']->getTimestamp() && $startDate->getTimestamp() < $value['end']->getTimestamp()) {
@@ -123,9 +121,13 @@ class Room
                 $check = false; // new start < old start AND new end > old end
             } elseif ($startDate->getTimestamp() > $value['start']->getTimestamp() && $endDate->getTimestamp() == $value['end']->getTimestamp()) {
                 $check = false; // new start > old start AND new end == old end
-            }
+            } elseif ($startDate->getTimestamp() == $value['start']->getTimestamp() && $endDate->getTimestamp() == $value['end']->getTimestamp())
+                $check = false; // if dates of the bookings exactly match
         }
-
+        // Check if end date is before end date
+        if ($startDate->getTimestamp() < $endDate->getTimestamp()) {
+            $check = false;
+        }
         return $check;
     }
 
@@ -158,6 +160,4 @@ class Room
 
         return $this;
     }
-
-
 }
