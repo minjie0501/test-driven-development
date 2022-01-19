@@ -14,8 +14,6 @@ use Doctrine\Persistence\ManagerRegistry;
 
 class BookingController extends AbstractController
 {
-    // TODO: add details of booking for the success message
-
     const PRICE_PER_HOUR = 2;
 
     #[Route('/booking', name: 'booking')]
@@ -73,7 +71,7 @@ class BookingController extends AbstractController
             // isAvailable
             $reservedDates = $room->reservedDates($doctrine);
             $isAvailable = $room->isAvailable($startTime, $endTime, $reservedDates);
-
+            
             // Create booking
             if ($canBook && $canBookTimeFrame && $canAfford && $isAvailable) {
                 $booking = new Booking();
@@ -82,32 +80,23 @@ class BookingController extends AbstractController
                 $booking->setStartDate($startTime);
                 $booking->setEndDate($endTime);
 
-                $entityManager = $doctrine->getManager();
-                $entityManager->persist($booking);
-                $entityManager->flush();
-
                 $currentCredit = $user->getCredit();
                 $user->setCredit($currentCredit - (self::PRICE_PER_HOUR * $hours));
+
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($booking);
+                $entityManager->persist($user);
+                $entityManager->flush();
+
 
                 return $this->render('booking/success.html.twig', [
                     'date' => $request['date'],
                     'startTime' => $request['start-time'],
                     'endTime' => $request['end-time'],
-                    'roomName' => $room->getName()
+                    'roomName' => $room->getName(),
                 ]);
             }
             return $this->redirectToRoute("booking", array('id' => $request['roomId'], 'error' => "true"));
-            $request = "";
-            // TODO: do something with this
         }
-        // $room = new User(true);
-        // $room ->setPassword("123pass");
-        // $room ->setEmail("jordan@doe.com");
-
-        // $entityManager = $doctrine->getManager();
-        // $entityManager->persist($room);
-        // $entityManager->flush();
-
-
     }
 }
