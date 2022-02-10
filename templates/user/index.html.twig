@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello UserController!
+{% endblock %}
+
+{% block body %}
+	<form action="/recharge-success" method="POST">
+		<label for="users">Choose your email:</label>
+		<select name="users" id="users">
+			{% for user in users %}
+				<option value={{ user.id}}>{{ user.email}}</option>
+			{% endfor %}
+		</select>
+		<label for="amount">Enter amount:</label>
+		<input type="number" id="amount" name="amount" min="1" max="1000">
+		<input type="submit" value="Recharge account">
+	</form>
+{% endblock %}

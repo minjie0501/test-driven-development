@@ -90,6 +90,15 @@ class User
         return $this;
     }
 
+    public function canRecharge(int $amount): bool
+    {
+        if ($amount > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /**
      * @return Collection|Booking[]
      */
@@ -119,6 +128,4 @@ class User
 
         return $this;
     }
-
-
 }
